@@ -1,0 +1,21 @@
+===== Contoh Serangan Phishing =====
+
+1. **Email Penipuan Bank**
+   Subjek: "Pembaruan Akun Bank Anda"
+   Isi: "Kami mendeteksi aktivitas mencurigakan di akun Anda. Klik tautan berikut untuk memverifikasi identitas Anda."
+   Tautan palsu: `http://secure-bank-verifikasi.com`
+
+2. **Hadiah Palsu**
+   Subjek: "Selamat! Anda memenangkan hadiah $10,000"
+   Isi: "Untuk klaim hadiah, masukkan informasi pribadi Anda di tautan berikut."
+   Tautan palsu: `http://win-big-prizes.com`
+
+3. **Login Akun Tertipu**
+   Subjek: "Akun Anda Telah Dikunci"
+   Isi: "Untuk membuka akun Anda, silakan login di sini."
+   Tautan palsu: `http://recovery-account-login.com`
+
+===== Cara Mencegah =====
+- Jangan pernah klik tautan mencurigakan.
+- Periksa alamat pengirim email dengan teliti.
+- Laporkan email mencurigakan ke tim IT atau layanan pelanggan resmi.

@@ -26,16 +26,16 @@ if ($result->num_rows > 0) {
     echo "Data pengguna tidak ditemukan.";
     exit();
 }
-
-// Update the missing comma
+// Data layanan siber
 $cyber_services = [
     ['title' => 'Cyber Security', 'desc' => 'Melindungi sistem informasi Anda dari ancaman siber.'],
     ['title' => 'Data Encryption', 'desc' => 'Mengamankan data penting dengan teknologi enkripsi terkini.'],
     ['title' => 'Penetration Testing', 'desc' => 'Mengidentifikasi celah keamanan dengan pengujian penetrasi.'],
     ['title' => 'Incident Response', 'desc' => 'Respon cepat untuk menangani insiden keamanan siber.'],
     ['title' => 'Threat Intelligence', 'desc' => 'Memahami ancaman terbaru untuk perlindungan lebih baik.'],
-    ['title' => 'Cloud Security', 'desc' => 'Keamanan untuk aplikasi dan data berbasis cloud.'] // <-- added the missing comma here
+    ['title' => 'Cloud Security', 'desc' => 'Keamanan untuk aplikasi dan data berbasis cloud.']
 ];
+
 // Query untuk mendapatkan semua pengguna (selain yang sedang login)
 $query_users = "SELECT id, username FROM project WHERE username != ?";
 $stmt_users = $conn->prepare($query_users);
@@ -90,261 +90,270 @@ if ($filter_user_id) {
 
 $stmt_messages->execute();
 $result_messages = $stmt_messages->get_result();
+$files_directory = 'files/';
+$files = [];
+
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: #f5f5f5;
-        display: flex;
-        color: #34495e;
-    }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            color: #34495e;
+        }
 
-    .sidebar {
-        width: 250px;
-        background: #34495e;
-        color: white;
-        height: 100vh;
-        position: fixed;
-        display: flex;
-        flex-direction: column;
-    }
+        .sidebar {
+            width: 250px;
+            background: #34495e;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .sidebar h1 {
-        text-align: center;
-        padding: 20px;
-        background: #2c3e50;
-        font-size: 24px;
-        font-weight: bold;
-        color: #ecf0f1;
-    }
+        .sidebar h1 {
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
 
-    .sidebar a {
-        text-decoration: none;
-        color: white;
-        padding: 15px 20px;
-        display: block;
-        border-bottom: 1px solid #2c3e50;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: background 0.3s;
-    }
+        .sidebar a {
+            text-decoration: none;
+            color: white;
+            padding: 15px 20px;
+            display: block;
+            border-bottom: 1px solid #2c3e50;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.3s;
+        }
 
-    .sidebar a:hover, .sidebar a.active {
-        background: #1abc9c;
-    }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: #1abc9c;
+        }
 
-    .sidebar a i {
-        font-size: 18px;
-    }
+        .sidebar a i {
+            font-size: 18px;
+        }
 
-    .content {
-        margin-left: 250px;
-        padding: 30px;
-        width: calc(100% - 250px);
-        background: #ecf0f1;
-        min-height: 100vh;
-    }
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+            width: calc(100% - 250px);
+            background: #ecf0f1;
+            min-height: 100vh;
+        }
 
-    .section {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-    }
+        .section {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
 
-    .section h2 {
-        font-size: 24px;
-        color: #2c3e50;
-        margin-bottom: 15px;
-    }
+        .section h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
 
-    .service-card {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
+        .service-card {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
 
-    .service {
-        flex: 1;
-        min-width: 200px;
-        background: #16a085;
-        color: #ecf0f1;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s;
-    }
+        .service {
+            flex: 1;
+            min-width: 200px;
+            background: #16a085;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
 
-    .service:hover {
-        transform: translateY(-5px);
-    }
+        .service:hover {
+            transform: translateY(-5px);
+        }
 
-    .profile-photo {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto 20px;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 4px solid #16a085;
-        background-color: #e0e0e0;
-    }
+        .profile-photo {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 4px solid #16a085;
+            background-color: #e0e0e0;
+        }
 
-    .profile-photo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-    .hidden {
-        display: none;
-    }
+        .hidden {
+            display: none;
+        }
 
-    .menu-item.active {
-        background-color: #1abc9c;
-    }
+        .menu-item.active {
+            background-color: #1abc9c;
+        }
 
-    /* Profil Center */
-    .profile-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 400px;
-        position: relative;
-        padding: 20px;
-    }
+        /* Profil Center */
+        .profile-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            position: relative;
+            padding: 20px;
+        }
 
-    .profile-content {
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        padding: 30px;
-        width: 100%;
-        max-width: 600px;
-        text-align: center;
-    }
+        .profile-content {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
 
-    .profile-content h2 {
-        margin-bottom: 20px;
-        font-size: 28px;
-    }
+        .profile-content h2 {
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
 
-    .profile-content p {
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
+        .profile-content p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
 
-    .profile-content .btn {
-        background-color: #16a085;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 16px;
-        margin-top: 20px;
-        display: inline-block;
-    }
+        .profile-content .btn {
+            background-color: #16a085;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+            display: inline-block;
+        }
 
-    .profile-content .btn:hover {
-        background-color: #1abc9c;
-    }
+        .profile-content .btn:hover {
+            background-color: #1abc9c;
+        }
 
-    /* Pesan - Container */
-    .messages {
-        margin-top: 20px;
-        padding: 15px;
-        background-color: #ecf0f1; /* Latar belakang putih lembut */
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan halus */
-        color: #34495e; /* Teks warna abu gelap */
-    }
+        /* Pesan - Container */
+        .messages {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+        }
 
-    /* Pesan - Tiap Pesan */
-    .message {
-        margin-bottom: 15px;
-        padding: 10px;
-        background-color: #ffffff; /* Latar belakang putih */
-        border-left: 4px solid #1abc9c; /* Garis hijau terang */
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Bayangan halus */
-        color: #34495e; /* Warna teks abu gelap */
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
+        /* Pesan - Tiap Pesan */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #ffffff;
+            border-left: 4px solid #1abc9c;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
 
-    .message:hover {
-        transform: scale(1.03); /* Sedikit zoom saat di-hover */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Bayangan lebih tajam */
-    }
+        .message:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
 
-    /* Nama Pengirim */
-    .message strong {
-        color: #1abc9c; /* Hijau terang */
-        font-weight: bold;
-    }
+        /* Nama Pengirim */
+        .message strong {
+            color: #1abc9c;
+            font-weight: bold;
+        }
 
-    /* Form Kirim Pesan */
-    form {
-        background-color: #ecf0f1; /* Latar belakang putih lembut */
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan halus */
-        color: #34495e; /* Teks abu gelap */
-    }
+        /* Form Kirim Pesan */
+        form {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+        }
 
-    form label {
-        font-size: 16px;
-        font-weight: bold;
-        margin-bottom: 8px;
-        display: block;
-        color: #34495e; /* Abu gelap */
-    }
+        form label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            color: #34495e;
+        }
 
-    form select, form textarea {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #1abc9c; /* Hijau terang */
-        background: #ffffff;
-        color: #34495e; /* Abu gelap */
-        margin-bottom: 15px;
-    }
+        form select,
+        form textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #1abc9c;
+            background: #ffffff;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
 
-    form button {
-        background: #1abc9c; /* Hijau terang */
-        border: none;
-        padding: 10px 20px;
-        color: #ffffff; /* Teks putih */
-        font-weight: bold;
-        text-transform: uppercase;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+        form button {
+            background: #1abc9c;
+            border: none;
+            padding: 10px 20px;
+            color: #ffffff;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    form button:hover {
-        background: #16a085; /* Hijau lebih gelap */
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Bayangan hover */
-    }
-</style>
+        form button:hover {
+            background: #16a085;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+    </style>
 </head>
+
 <body>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <h1>Dashboard</h1>
@@ -359,6 +368,9 @@ $result_messages = $stmt_messages->get_result();
                 <i class="fas fa-envelope"></i> Pesan
             </a>
         </div>
+        <a href="data.php">
+            <i class="fas fa-database"></i> Data
+        </a>
         <a href="logout.php">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
@@ -391,16 +403,18 @@ $result_messages = $stmt_messages->get_result();
                     <p>Email: <?php echo htmlspecialchars($email); ?></p>
                     <p>Telepon: <?php echo htmlspecialchars($phone); ?></p>
                     <p>Alamat: <?php echo htmlspecialchars($address); ?></p>
-                    <a href="edit_profile.php" class="btn">Edit Profil</a>
+                    <a href="change_profil.php" class="btn">Edit Profil</a>
                 </div>
             </div>
         </div>
 
         <!-- Bagian Pesan -->
         <div id="send_message" class="section hidden">
-            <h2 style="color: #1abc9c">Pesan Anda</h2> 
-            <form action="#send_message" method="POST">
-                <label for="receiver_id">Kirim ke:</label>
+            <h2 style="color: #1abc9c; text-align: center;">Kirim dan Lihat Pesan</h2>
+
+            <!-- Form Kirim Pesan -->
+            <form action="#send_message" method="POST" style="margin-bottom: 20px;">
+                <label for="receiver_id">Kirim Pesan ke:</label>
                 <select name="receiver_id" required>
                     <?php foreach ($users as $other_user): ?>
                         <option value="<?php echo $other_user['id']; ?>">
@@ -408,17 +422,18 @@ $result_messages = $stmt_messages->get_result();
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <label for="message">Pesan:</label>
-                <textarea name="message" rows="5" required></textarea>
-                <button type="submit">Kirim</button>
+                <label for="message">Pesan Anda:</label>
+                <textarea name="message" required></textarea>
+                <button type="submit">Kirim Pesan</button>
             </form>
 
-            <form method="GET" action="#send_message">
-                <label for="filter_user">Pilih Pengguna:</label>
+            <!-- Filter Pengguna -->
+            <form method="GET" action="#send_message" style="margin-bottom: 20px;">
+                <label for="filter_user">Filter Pengguna:</label>
                 <select name="filter_user" onchange="this.form.submit()">
                     <option value="">Semua Pengguna</option>
                     <?php foreach ($users as $other_user): ?>
-                        <option value="<?php echo $other_user['id']; ?>" 
+                        <option value="<?php echo $other_user['id']; ?>"
                             <?php echo (isset($_GET['filter_user']) && $_GET['filter_user'] == $other_user['id']) ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($other_user['username']); ?>
                         </option>
@@ -426,74 +441,65 @@ $result_messages = $stmt_messages->get_result();
                 </select>
             </form>
 
+            <!-- Tampilkan Pesan -->
             <div class="messages">
                 <?php if ($result_messages->num_rows > 0): ?>
-                    <?php while ($message = $result_messages->fetch_assoc()): ?>
-                        <div class="message">
-                            <strong><?php echo htmlspecialchars($message['username']); ?>:</strong>
-                            <p><?php echo htmlspecialchars($message['message']); ?></p>
-                        </div>
-                    <?php endwhile; ?>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <?php while ($message = $result_messages->fetch_assoc()): ?>
+                            <li style="padding: 10px; margin: 10px 0; border-radius: 5px; background-color: <?php echo ($message['sender_id'] == $user['id']) ? '#e8f8f5' : '#f0f9f9'; ?>; border-left: 4px solid <?php echo ($message['sender_id'] == $user['id']) ? '#16a085' : '#1abc9c'; ?>;">
+                                <strong><?php echo htmlspecialchars($message['username']); ?>:</strong>
+                                <p style="margin: 5px 0;"><?php echo htmlspecialchars($message['message']); ?></p>
+                                <small style="color: #7f8c8d; display: block; text-align: right;">
+                                    <?php echo ($message['sender_id'] == $user['id']) ? 'Pesan Keluar' : 'Pesan Masuk'; ?>
+                                </small>
+                            </li>
+                        <?php endwhile; ?>
+                    </ul>
                 <?php else: ?>
-                    <p>Tidak ada pesan.</p>
+                    <p style="text-align: center; color: #7f8c8d;">Tidak ada pesan.</p>
                 <?php endif; ?>
             </div>
-        </div>
-    </div>
 
-    <script>
-        // Fungsi navigasi menu
-const menuItems = document.querySelectorAll('.menu-item');
-const sections = document.querySelectorAll('.section');
+            <!-- JavaScript -->
+            <script>
+                // Update hash di URL dan tampilkan section yang sesuai
+                const links = document.querySelectorAll('.menu-item');
+                const sections = document.querySelectorAll('.section');
 
-function setActiveSection(event) {
-    event.preventDefault(); // Mencegah halaman berganti
-    const activeSection = event.target.getAttribute('href'); // Ambil href menu yang diklik
+                function changeSection() {
+                    const hash = window.location.hash;
 
-    // Update URL di browser tanpa reload halaman
-    window.location.hash = activeSection;
+                    // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
+                    sections.forEach(section => {
+                        section.classList.add('hidden');
+                        if (hash && section.id === hash.substring(1)) {
+                            section.classList.remove('hidden');
+                        }
+                    });
 
-    // Menentukan menu aktif
-    menuItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === activeSection) {
-            item.classList.add('active');
-        }
-    });
+                    // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
+                    links.forEach(link => {
+                        if (link.getAttribute('href') === hash) {
+                            link.classList.add('active');
+                        } else {
+                            link.classList.remove('active');
+                        }
+                    });
+                }
 
-    // Menampilkan konten yang sesuai
-    sections.forEach(section => {
-        section.classList.add('hidden');
-        if ("#" + section.id === activeSection) {
-            section.classList.remove('hidden');
-        }
-    });
-}
+                // Menjalankan fungsi `changeSection` ketika halaman dimuat dan saat hash di URL berubah
+                window.addEventListener('load', changeSection);
+                window.addEventListener('hashchange', changeSection);
 
-menuItems.forEach(item => {
-    item.addEventListener('click', setActiveSection);
-});
+                // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
+                links.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault(); // Mencegah reload halaman
+                        window.location.hash = this.getAttribute('href'); // Mengubah hash URL
+                    });
+                });
+            </script>
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Periksa hash yang ada di URL saat pertama kali dimuat
-    const currentHash = window.location.hash || "#home";
-    // Setkan menu yang aktif
-    menuItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === currentHash) {
-            item.classList.add('active');
-        }
-    });
-
-    // Setkan section yang sesuai dengan hash
-    sections.forEach(section => {
-        section.classList.add('hidden');
-        if ("#" + section.id === currentHash) {
-            section.classList.remove('hidden');
-        }
-    });
-});
-
-    </script>
 </body>
+
 </html>

@@ -1,0 +1,18 @@
+===== Pengenalan Cyber Security =====
+Keamanan siber adalah praktik melindungi sistem, jaringan, dan program dari serangan digital. 
+Serangan ini biasanya bertujuan untuk mengakses, mengubah, atau menghancurkan informasi sensitif, 
+memeras pengguna, atau mengganggu operasi bisnis.
+
+===== Topik Utama =====
+1. Keamanan Jaringan
+2. Keamanan Aplikasi
+3. Keamanan Informasi
+4. Keamanan Operasional
+5. Pemulihan Bencana
+
+===== Statistik =====
+- Serangan siber meningkat sebesar 30% pada tahun 2023.
+- 43% dari serangan menargetkan usaha kecil dan menengah.
+- Biaya rata-rata pelanggaran data mencapai $4,35 juta.
+
+Tetap waspada, lindungi data Anda!
