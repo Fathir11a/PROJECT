@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($role === 'admin') {
                 header("Location: pilih.php");
             } else if ($role === 'user') {
-                header("Location: hello.php");
+                header("Location: hello.php#home");
             } else {
                 $error_message = "Role tidak valid.";
             }

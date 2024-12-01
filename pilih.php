@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validasi pilihan dan redirect
     if ($redirect_to === 'hello') {
-        header("Location: hello.php");
+        header("Location: hello.php#home");
         exit;
     } elseif ($redirect_to === 'dashboard') {
         header("Location: dashboard.php");
