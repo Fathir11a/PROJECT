@@ -22,10 +22,12 @@ if ($result->num_rows > 0) {
     $phone = $user['phone'];
     $address = $user['address'];
     $photo = $user['profile_picture']; // Nama file foto profil
+    $role = $user['role']; // Role pengguna
 } else {
     echo "Data pengguna tidak ditemukan.";
     exit();
 }
+
 // Data layanan siber
 $cyber_services = [
     ['title' => 'Cyber Security', 'desc' => 'Melindungi sistem informasi Anda dari ancaman siber.'],
@@ -172,7 +174,8 @@ $files = [];
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            margin: 40px 0;
+            /* Jarak atas dan bawah */
         }
 
         .section h2 {
@@ -201,6 +204,7 @@ $files = [];
         .service:hover {
             transform: translateY(-5px);
         }
+
 
         .profile-photo {
             width: 150px;
@@ -367,6 +371,11 @@ $files = [];
             <a href="#send_message" class="menu-item">
                 <i class="fas fa-envelope"></i> Pesan
             </a>
+            <?php if ($role === 'admin'): ?>
+                <a href="admin.php">
+                    <i class="fas fa-cogs"></i> Admin Dashboard
+                </a>
+            <?php endif; ?>
         </div>
         <a href="data.php">
             <i class="fas fa-database"></i> Data
@@ -390,6 +399,9 @@ $files = [];
                     </div>
                 <?php endforeach; ?>
             </div>
+            <footer>
+                <p>© 2024 Securiti Dashboard. Built with passion for security. <a href="https://nemosecurity.com/">Learn more</a></p>
+            </footer>
         </div>
 
         <!-- Bagian Profil -->
@@ -487,7 +499,7 @@ $files = [];
                     });
                 }
 
-                // Menjalankan fungsi `changeSection` ketika halaman dimuat dan saat hash di URL berubah
+                // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
                 window.addEventListener('load', changeSection);
                 window.addEventListener('hashchange', changeSection);
 
@@ -499,7 +511,7 @@ $files = [];
                     });
                 });
             </script>
-
+            
 </body>
 
 </html>

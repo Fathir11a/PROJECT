@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($redirect_to === 'hello') {
         header("Location: hello.php#home");
         exit;
-    } elseif ($redirect_to === 'dashboard') {
-        header("Location: dashboard.php");
+    } elseif ($redirect_to === 'admin dashboard') {
+        header("Location: admin.php");
         exit;
     } else {
         $message = "<p style='color: red;'>Pilih halaman untuk diarahkan.</p>";
@@ -111,9 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h3>Hello Page</h3>
             <p>Go to the Hello page.</p>
         </div>
-        <div class="option-box" onclick="window.location.href='dashboard.php';">
-            <h3>Dashboard</h3>
-            <p>Go to the Dashboard page.</p>
+        <div class="option-box" onclick="window.location.href='admin.php';">
+            <h3>Admin Dashboard</h3>
+            <p>Go to the Admin Dashboard page.</p>
         </div>
     </div>
 
