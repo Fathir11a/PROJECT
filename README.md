@@ -1,9 +1,8 @@
 # Halaman Login 
-![alt text](image.png)
+![Alt Text](https://github.com/Fathir11a/project/blob/main/image/image.png)
+
 
 ## Fitur Halaman Login 
-
-
 - **Autentikasi Pengguna**:
 Pengguna dapat login dengan memasukkan username, password, dan email.Script memvalidasi kredensial pengguna terhadap database menggunakan query SQL dengan prepared statement.
 
@@ -61,7 +60,7 @@ Jika login gagal, pesan error ditampilkan di halaman.
 Menggunakan elemen HTML sederhana untuk form input dan tombol, dihias dengan CSS.
 ___
 # Halaman Registrasi
-![alt text](image-1.png)
+![alt text](https://github.com/Fathir11a/project/blob/main/image/image-1.png?raw=true)
 
 ## Fitur Halaman Registrasi
 **Pengguna dapat memasukkan data seperti**:
@@ -156,7 +155,7 @@ ___
 
 Cyber Security Admin Panel adalah antarmuka berbasis web yang memungkinkan admin untuk mengarahkan pengguna ke halaman yang berbeda berdasarkan pilihan yang tersedia. Script ini dibuat menggunakan PHP, HTML, dan CSS dengan desain modern.
 
-![alt text](image-2.png)
+![alt text](https://github.com/Fathir11a/project/blob/main/image/image-2.png)
 
 ## Fitur Utama
 
@@ -212,7 +211,7 @@ ___
 
 Dashboard admin ini dirancang untuk mengelola pengguna dan mengatur peran (role) pengguna dalam sistem. Aplikasi ini memastikan bahwa hanya admin yang memiliki akses ke fungsi-fungsi tertentu. Berikut adalah fitur lengkapnya:
 
-![alt text](image-3.png)
+![alt text](https://github.com/Fathir11a/project/blob/main/image/image-3.png)
 
 ## Fitur Utama
 
@@ -354,9 +353,9 @@ ___
 Aplikasi ini adalah sistem dashboard berbasis web untuk pengguna PT Sekuriti Siber Indonesia. Sistem ini menyediakan fitur manajemen profil, komunikasi melalui pesan, dan informasi layanan keamanan siber.
 
 # image
-## Home ![alt text](image-4.png)
-## Profil ![alt text](image-5.png)
-## Pesan ![alt text](image-6.png)
+## Home ![alt text](https://github.com/Fathir11a/project/blob/main/image/Screen%20Shot%202024-12-07%20at%2008.44.25.png)
+## Profil ![alt text](https://github.com/Fathir11a/project/blob/main/image/image-5.png)
+## Pesan ![alt text](https://github.com/Fathir11a/project/blob/main/image/image-6.png)
 
 ## Fitur Utama
 
@@ -460,7 +459,7 @@ Aplikasi ini adalah sistem dashboard berbasis web untuk pengguna PT Sekuriti Sib
 
 Skrip PHP ini digunakan untuk mengirim pesan antara pengguna dalam sistem. Skrip ini menangani pengiriman pesan dari pengirim (sender) ke penerima (receiver) dan menyimpannya dalam database.
 
-## Kirim Pesan ![alt text](image-6.png)
+## Kirim Pesan ![alt text](https://github.com/Fathir11a/project/blob/main/image/image-6.png)
 
 ## Fitur Utama
 

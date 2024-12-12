@@ -74,6 +74,16 @@ $conn->close();
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
+
+        form {
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .form_group{
+            margin-bottom: 20px;
+        }
+       
         h1 {
             font-size: 32px;
             color: #0a8f3f;
@@ -86,9 +96,9 @@ $conn->close();
         }
         input[type="text"], input[type="password"], input[type="email"] {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
+            padding: 10px;
             border: 1px solid #555;
+            box-sizing: border-box;
             background: #333;
             color: #fff;
             border-radius: 5px;
@@ -125,15 +135,19 @@ $conn->close();
     <h1>Welcome To Security Siber Indonesia</h1>
     <div class="container">
         <form action="" method="POST">
-            <label for="username">Username:</label>
-            <input type="text" name="username" required><br>
+            <div class="form_group">
+                <label for="username">Username:</label>
+                <input type="text" name="username" required><br>
+            </div>
 
-            <label for="password">Password:</label>
-            <input type="password" name="password" required><br>
-
-            <label for="email">Email:</label>
-            <input type="email" name="email" required><br>
-
+            <div class="form_group">
+                <label for="password">Password:</label>
+                <input type="password" name="password" required><br>
+            </div>
+            <div class="form_group">
+                <label for="email">Email:</label>
+                <input type="email" name="email" required><br>
+            </div>
             <button type="submit">Login</button>
         </form>
 

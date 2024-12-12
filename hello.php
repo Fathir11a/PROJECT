@@ -23,6 +23,26 @@ if ($result->num_rows > 0) {
     $address = $user['address'];
     $photo = $user['profile_picture']; // Nama file foto profil
     $role = $user['role']; // Role pengguna
+    $user_id = $user['user_id']; // Asumsikan ada kolom user_id
+
+    // Pastikan user_id adalah integer dan sesuai dengan struktur tabel
+    $sql_coin = "SELECT coin_balance FROM project WHERE username = ?";
+    $stmt_coin = $conn->prepare($sql_coin);
+    $stmt_coin->bind_param('i', $username);  // 'i' berarti integer
+    $stmt_coin->execute();
+    $result_coin = $stmt_coin->get_result();
+
+    // Periksa apakah hasil query ada
+    if ($result_coin->num_rows > 0) {
+        // Ambil nilai coin_balance
+        $coin_balance = $result_coin->fetch_assoc()['coin_balance'];
+    } else {
+        // Jika tidak ada data saldo coin, set nilai default
+        $coin_balance = 0;
+    }
+
+    // Debug: Tampilkan saldo coin untuk memastikan
+    echo "Saldo Coin: " . $coin_balance;
 } else {
     echo "Data pengguna tidak ditemukan.";
     exit();
@@ -230,6 +250,59 @@ $files = [];
             background-color: #1abc9c;
         }
 
+        /* Profile Info Container */
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Pusatkan teks secara horizontal */
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: #34495e;
+            font-family: 'Poppins', sans-serif;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Table Style (Teks Sejajar dengan Nama) */
+        .profile-info table {
+            width: auto;
+            /* Sesuaikan dengan isi */
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        .profile-info table th,
+        .profile-info table td {
+            text-align: left;
+            /* Teks rata kiri */
+            font-size: 16px;
+            font-weight: 500;
+            padding: 5px 10px;
+            /* Jarak horizontal antara teks */
+            vertical-align: middle;
+            color: #34495e;
+        }
+
+        .profile-info table th {
+            font-weight: bold;
+        }
+
+        .profile-info table td:first-child {
+            padding-right: 5px;
+        }
+
+        .profile-info table tr {
+            height: 30px;
+            /* Jarak vertikal antar baris */
+        }
+
+
         /* Profil Center */
         .profile-container {
             display: flex;
@@ -371,19 +444,26 @@ $files = [];
             <a href="#send_message" class="menu-item">
                 <i class="fas fa-envelope"></i> Pesan
             </a>
-            <?php if ($role === 'admin'): ?>
-                <a href="admin.php">
-                    <i class="fas fa-cogs"></i> Admin Dashboard
-                </a>
-            <?php endif; ?>
         </div>
+        <a href="topup.php">
+            <i class="fas fa-gem"></i> Topup
+        </a>
         <a href="data.php">
             <i class="fas fa-database"></i> Data
         </a>
+
+        <!-- Moved Admin Dashboard link below Data and above Logout -->
+        <?php if ($role === 'admin'): ?>
+            <a href="admin.php">
+                <i class="fas fa-cogs"></i> Admin Dashboard
+            </a>
+        <?php endif; ?>
+
         <a href="logout.php">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
+
 
     <!-- Content -->
     <div class="content">
@@ -412,13 +492,31 @@ $files = [];
                         <img src="path/to/photos/<?php echo htmlspecialchars($photo); ?>" alt="Foto Profil">
                     </div>
                     <h2><?php echo htmlspecialchars($name); ?></h2>
-                    <p>Email: <?php echo htmlspecialchars($email); ?></p>
-                    <p>Telepon: <?php echo htmlspecialchars($phone); ?></p>
-                    <p>Alamat: <?php echo htmlspecialchars($address); ?></p>
-                    <a href="change_profil.php" class="btn">Edit Profil</a>
+                    <div class="profile-info">
+                        <table>
+                            <tr>
+                                <th>Email</th>
+                                <td>: <?= htmlspecialchars($user['email']); ?></td>
+                            </tr>
+                            <tr>
+                                <th>No Telepon</th>
+                                <td>: <?= htmlspecialchars($user['phone']); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Address</th>
+                                <td>: <?= htmlspecialchars($user['address']); ?></td>
+                            </tr>
+                            <tr>
+                                <th>Saldo</th>
+                                <td>: Rp <?= number_format($user['coin_balance'], 0, ',', '.'); ?></td>
+                            </tr>
+                        </table>
+                    </div>
+
                 </div>
             </div>
         </div>
+
 
         <!-- Bagian Pesan -->
         <div id="send_message" class="section hidden">
@@ -511,7 +609,7 @@ $files = [];
                     });
                 });
             </script>
-            
+
 </body>
 
 </html>
