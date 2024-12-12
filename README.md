@@ -353,7 +353,7 @@ ___
 Aplikasi ini adalah sistem dashboard berbasis web untuk pengguna PT Sekuriti Siber Indonesia. Sistem ini menyediakan fitur manajemen profil, komunikasi melalui pesan, dan informasi layanan keamanan siber.
 
 # image
-## Home ![alt text](https://github.com/Fathir11a/project/blob/main/image/Screen%20Shot%202024-12-07%20at%2008.44.25.png)
+## Home ![Screen Shot 2024-12-12 at 15 30 02](https://github.com/user-attachments/assets/c20c8d54-f88a-4fda-8665-4fd604528ad1)
 ## Profil ![alt text](https://github.com/Fathir11a/project/blob/main/image/image-5.png)
 ## Pesan ![alt text](https://github.com/Fathir11a/project/blob/main/image/image-6.png)
 
