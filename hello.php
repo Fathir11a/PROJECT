@@ -69,52 +69,6 @@ $users = [];
 while ($row = $result_users->fetch_assoc()) {
     $users[] = $row;
 }
-
-// Proses pengiriman pesan
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message'])) {
-    $sender_id = $user['id']; // ID pengirim
-    $receiver_id = $_POST['receiver_id']; // ID penerima
-    $message = $_POST['message']; // Pesan
-
-    // Query untuk menyimpan pesan
-    $query_send_message = "INSERT INTO messages (sender_id, receiver_id, message) VALUES (?, ?, ?)";
-    $stmt_send_message = $conn->prepare($query_send_message);
-    $stmt_send_message->bind_param('iis', $sender_id, $receiver_id, $message);
-
-    if ($stmt_send_message->execute()) {
-        echo "Pesan berhasil dikirim!";
-    } else {
-        echo "Gagal mengirim pesan.";
-    }
-}
-
-// Proses filter pesan
-$filter_user_id = isset($_GET['filter_user']) ? $_GET['filter_user'] : null;
-
-// Query untuk pesan
-$query_messages = "SELECT messages.message, messages.sender_id, messages.receiver_id, users.username 
-                   FROM messages
-                   JOIN project AS users ON messages.sender_id = users.id 
-                   WHERE (messages.sender_id = ? OR messages.receiver_id = ?)";
-
-if ($filter_user_id) {
-    $query_messages .= " AND (messages.sender_id = ? OR messages.receiver_id = ?)";
-}
-
-$query_messages .= " ORDER BY messages.id DESC";
-$stmt_messages = $conn->prepare($query_messages);
-
-if ($filter_user_id) {
-    $stmt_messages->bind_param('iiii', $user['id'], $user['id'], $filter_user_id, $filter_user_id);
-} else {
-    $stmt_messages->bind_param('ii', $user['id'], $user['id']);
-}
-
-$stmt_messages->execute();
-$result_messages = $stmt_messages->get_result();
-$files_directory = 'files/';
-$files = [];
-
 ?>
 
 <!DOCTYPE html>
@@ -202,6 +156,10 @@ $files = [];
             font-size: 24px;
             color: #2c3e50;
             margin-bottom: 15px;
+        }
+
+        .section footer p {
+            margin-top: 40px;
         }
 
         .service-card {
@@ -347,85 +305,6 @@ $files = [];
         .profile-content .btn:hover {
             background-color: #1abc9c;
         }
-
-        /* Pesan - Container */
-        .messages {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            color: #34495e;
-        }
-
-        /* Pesan - Tiap Pesan */
-        .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #ffffff;
-            border-left: 4px solid #1abc9c;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            color: #34495e;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .message:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Nama Pengirim */
-        .message strong {
-            color: #1abc9c;
-            font-weight: bold;
-        }
-
-        /* Form Kirim Pesan */
-        form {
-            background-color: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            color: #34495e;
-        }
-
-        form label {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            display: block;
-            color: #34495e;
-        }
-
-        form select,
-        form textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #1abc9c;
-            background: #ffffff;
-            color: #34495e;
-            margin-bottom: 15px;
-        }
-
-        form button {
-            background: #1abc9c;
-            border: none;
-            padding: 10px 20px;
-            color: #ffffff;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        form button:hover {
-            background: #16a085;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
     </style>
 </head>
 
@@ -441,10 +320,10 @@ $files = [];
             <a href="#profile" class="menu-item">
                 <i class="fas fa-user"></i> Profil
             </a>
-            <a href="#send_message" class="menu-item">
-                <i class="fas fa-envelope"></i> Pesan
-            </a>
         </div>
+        <a href="pesan.php">
+            <i class="fas fa-envelope"></i> Pesan`
+        </a>
         <a href="topup.php">
             <i class="fas fa-gem"></i> Topup
         </a>
@@ -517,98 +396,45 @@ $files = [];
             </div>
         </div>
 
+        <!-- JavaScript -->
+        <script>
+            // Update hash di URL dan tampilkan section yang sesuai
+            const links = document.querySelectorAll('.menu-item');
+            const sections = document.querySelectorAll('.section');
 
-        <!-- Bagian Pesan -->
-        <div id="send_message" class="section hidden">
-            <h2 style="color: #1abc9c; text-align: center;">Kirim dan Lihat Pesan</h2>
+            function changeSection() {
+                const hash = window.location.hash;
 
-            <!-- Form Kirim Pesan -->
-            <form action="#send_message" method="POST" style="margin-bottom: 20px;">
-                <label for="receiver_id">Kirim Pesan ke:</label>
-                <select name="receiver_id" required>
-                    <?php foreach ($users as $other_user): ?>
-                        <option value="<?php echo $other_user['id']; ?>">
-                            <?php echo htmlspecialchars($other_user['username']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <label for="message">Pesan Anda:</label>
-                <textarea name="message" required></textarea>
-                <button type="submit">Kirim Pesan</button>
-            </form>
-
-            <!-- Filter Pengguna -->
-            <form method="GET" action="#send_message" style="margin-bottom: 20px;">
-                <label for="filter_user">Filter Pengguna:</label>
-                <select name="filter_user" onchange="this.form.submit()">
-                    <option value="">Semua Pengguna</option>
-                    <?php foreach ($users as $other_user): ?>
-                        <option value="<?php echo $other_user['id']; ?>"
-                            <?php echo (isset($_GET['filter_user']) && $_GET['filter_user'] == $other_user['id']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($other_user['username']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-
-            <!-- Tampilkan Pesan -->
-            <div class="messages">
-                <?php if ($result_messages->num_rows > 0): ?>
-                    <ul style="list-style: none; padding: 0; margin: 0;">
-                        <?php while ($message = $result_messages->fetch_assoc()): ?>
-                            <li style="padding: 10px; margin: 10px 0; border-radius: 5px; background-color: <?php echo ($message['sender_id'] == $user['id']) ? '#e8f8f5' : '#f0f9f9'; ?>; border-left: 4px solid <?php echo ($message['sender_id'] == $user['id']) ? '#16a085' : '#1abc9c'; ?>;">
-                                <strong><?php echo htmlspecialchars($message['username']); ?>:</strong>
-                                <p style="margin: 5px 0;"><?php echo htmlspecialchars($message['message']); ?></p>
-                                <small style="color: #7f8c8d; display: block; text-align: right;">
-                                    <?php echo ($message['sender_id'] == $user['id']) ? 'Pesan Keluar' : 'Pesan Masuk'; ?>
-                                </small>
-                            </li>
-                        <?php endwhile; ?>
-                    </ul>
-                <?php else: ?>
-                    <p style="text-align: center; color: #7f8c8d;">Tidak ada pesan.</p>
-                <?php endif; ?>
-            </div>
-
-            <!-- JavaScript -->
-            <script>
-                // Update hash di URL dan tampilkan section yang sesuai
-                const links = document.querySelectorAll('.menu-item');
-                const sections = document.querySelectorAll('.section');
-
-                function changeSection() {
-                    const hash = window.location.hash;
-
-                    // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
-                    sections.forEach(section => {
-                        section.classList.add('hidden');
-                        if (hash && section.id === hash.substring(1)) {
-                            section.classList.remove('hidden');
-                        }
-                    });
-
-                    // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
-                    links.forEach(link => {
-                        if (link.getAttribute('href') === hash) {
-                            link.classList.add('active');
-                        } else {
-                            link.classList.remove('active');
-                        }
-                    });
-                }
-
-                // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
-                window.addEventListener('load', changeSection);
-                window.addEventListener('hashchange', changeSection);
-
-                // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
-                links.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault(); // Mencegah reload halaman
-                        window.location.hash = this.getAttribute('href'); // Mengubah hash URL
-                    });
+                // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
+                sections.forEach(section => {
+                    section.classList.add('hidden');
+                    if (hash && section.id === hash.substring(1)) {
+                        section.classList.remove('hidden');
+                    }
                 });
-            </script>
+
+                // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
+                links.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
+            window.addEventListener('load', changeSection);
+            window.addEventListener('hashchange', changeSection);
+
+            // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault(); // Mencegah reload halaman
+                    window.location.hash = this.getAttribute('href'); // Mengubah hash URL
+                });
+            });
+        </script>
 
 </body>
 

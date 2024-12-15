@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Halaman Login 
 ![Alt Text](https://github.com/Fathir11a/project/blob/main/image/image.png)
 
@@ -541,3 +542,6 @@ Skrip PHP ini memungkinkan pengguna untuk memilih dan menampilkan isi file yang 
 - Folder `files/` harus ada dan berisi file yang dapat dibaca.
 - File CSV harus memiliki format yang benar untuk dapat diproses dan ditampilkan dengan benar.
 
+=======
+# MASIH DALAM PERBAIKAN
+>>>>>>> 19a8ee4 (update program)
