@@ -305,6 +305,21 @@ while ($row = $result_users->fetch_assoc()) {
         .profile-content .btn:hover {
             background-color: #1abc9c;
         }
+
+        .profile-button {
+            background-color:#1abc9c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .profile-button:hover {
+            background-color:#1abc9c;
+        }
     </style>
 </head>
 
@@ -391,50 +406,54 @@ while ($row = $result_users->fetch_assoc()) {
                             </tr>
                         </table>
                     </div>
+                    <button class="profile-button" onclick="window.location.href='change_profil.php';">
+                        Ganti Profil
+                    </button>
 
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- JavaScript -->
-        <script>
-            // Update hash di URL dan tampilkan section yang sesuai
-            const links = document.querySelectorAll('.menu-item');
-            const sections = document.querySelectorAll('.section');
+    <!-- JavaScript -->
+    <script>
+        // Update hash di URL dan tampilkan section yang sesuai
+        const links = document.querySelectorAll('.menu-item');
+        const sections = document.querySelectorAll('.section');
 
-            function changeSection() {
-                const hash = window.location.hash;
+        function changeSection() {
+            const hash = window.location.hash;
 
-                // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
-                sections.forEach(section => {
-                    section.classList.add('hidden');
-                    if (hash && section.id === hash.substring(1)) {
-                        section.classList.remove('hidden');
-                    }
-                });
-
-                // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
-                links.forEach(link => {
-                    if (link.getAttribute('href') === hash) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
-                });
-            }
-
-            // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
-            window.addEventListener('load', changeSection);
-            window.addEventListener('hashchange', changeSection);
-
-            // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault(); // Mencegah reload halaman
-                    window.location.hash = this.getAttribute('href'); // Mengubah hash URL
-                });
+            // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
+            sections.forEach(section => {
+                section.classList.add('hidden');
+                if (hash && section.id === hash.substring(1)) {
+                    section.classList.remove('hidden');
+                }
             });
-        </script>
+
+            // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
+            links.forEach(link => {
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
+        window.addEventListener('load', changeSection);
+        window.addEventListener('hashchange', changeSection);
+
+        // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault(); // Mencegah reload halaman
+                window.location.hash = this.getAttribute('href'); // Mengubah hash URL
+            });
+        });
+    </script>
 
 </body>
 

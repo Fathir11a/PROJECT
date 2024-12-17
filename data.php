@@ -146,9 +146,20 @@ if (isset($content) && pathinfo($file, PATHINFO_EXTENSION) === 'csv') {
             color: red;
             font-size: 1.2rem;
         }
+        .back-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: red;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
+<a href="hello.php#home" class="back-button">Back</a>
     <h1>Baca File dari Server</h1>
 
     <!-- Form untuk memilih file -->
