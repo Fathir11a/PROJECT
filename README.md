@@ -1,9 +1,11 @@
-# Login Cyber Security Indoneia 
+# Login Cyber Security Indonesia 
 
-![Login Menu](image/login.png)
+![login](image/login.png)
 
 ## Deskripsi
 Sistem login ini digunakan untuk mengamankan akses pengguna ke aplikasi Cyber Security Indonesia. Pengguna diminta untuk memasukkan `username`, `password`, dan `email` untuk login. Pengguna yang masuk akan diarahkan ke halaman berbeda berdasarkan peran mereka (admin atau user).
+
+---
 
 ## Fungsi Inti
 1. **Form Login**:
@@ -22,10 +24,31 @@ Sistem login ini digunakan untuk mengamankan akses pengguna ke aplikasi Cyber Se
    - Menyediakan antarmuka pengguna yang ramah dengan gaya dan tata letak yang menarik.
    - Menampilkan pesan kesalahan jika terjadi kesalahan pada proses login.
 
+---
+
+## Kredensial Login
+Gunakan akun berikut untuk mengakses aplikasi:
+
+### Admin
+- **Username:** `admin`
+- **Password:** `admin123`
+- **Email:** `admin@cybersecurityindonesia.com`
+
+### User
+- **Username:** `user`
+- **Password:** `user123`
+- **Email:** `user@cybersecurityindonesia.com`
+
+> **Catatan:** Kredensial ini hanya untuk keperluan pengujian. Silakan ubah kredensial di database untuk penggunaan di lingkungan produksi.
+
+---
+
 ## Instalasi
 1. Salin file `login.php` ke dalam direktori yang sesuai di server web Anda.
 2. Pastikan database MySQL sudah terhubung dengan aplikasi ini menggunakan file `koneksi.php`.
 3. Sesuaikan pengaturan koneksi database di `koneksi.php` dengan pengaturan MySQL Anda.
+
+---
 
 ## Penggunaan
 1. Buka halaman login di browser web.
@@ -33,11 +56,14 @@ Sistem login ini digunakan untuk mengamankan akses pengguna ke aplikasi Cyber Se
 3. Tekan tombol "Login" untuk masuk ke dalam sistem.
 4. Jika Anda belum memiliki akun, tekan tombol "Register" untuk membuat akun baru.
 
-## Kontak
-- Email: support@cybersecurityindonesia.com
-- Situs Web: [Cyber Security Indonesia](https://www.cybersecurityindonesia.com)
+---
 
-----
+## Kontak
+- **Email:** support@cybersecurityindonesia.com
+- **Situs Web:** [Cyber Security Indonesia](https://www.cybersecurityindonesia.com)
+
+
+
 
 # Formulir Registrasi 
 
@@ -536,7 +562,4 @@ Tidak diperlukan instalasi khusus. Salin script ini ke dalam folder aplikasi And
 - Pastikan bahwa `index.php` adalah halaman utama tempat pengguna diarahkan setelah logout.
 - Gunakan script ini dengan hati-hati pada aplikasi dengan multi-user untuk menghindari masalah akses silang.
 
-
-
-#
 

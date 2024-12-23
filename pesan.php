@@ -170,7 +170,7 @@ if ($receiver_id) {
 <body>
 <div class="user-list" style="display: flex; flex-direction: column; height: 100vh;">
     <div style="flex: 1; overflow-y: auto;">
-        <h3>Daftar Pengguna</h3>
+        <h3>Pengguna</h3>
         <ul>
             <?php while ($user = $users->fetch_assoc()) { ?>
                 <li>
@@ -204,7 +204,7 @@ if ($receiver_id) {
 
     <!-- Chat Box -->
     <div class="chat-box">
-        <h3>Chat</h3>
+        <h3>Massage</h3>
         <?php if ($receiver_id): ?>
         <div class="chat-messages">
             <?php if ($messages instanceof mysqli_result) {

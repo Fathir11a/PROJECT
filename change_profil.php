@@ -3,7 +3,7 @@ session_start();
 
 // Cek apakah pengguna sudah login, jika belum, arahkan ke halaman login
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: index.php");
     exit();
 }
 
@@ -87,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("ssssi", $full_name, $phone, $address, $target_file, $id_pengguna);
 
     if ($stmt->execute()) {
-        header("Location: index.php");
+        header("Location:hello.php#profile");
         exit;
     } else {
         echo "Gagal menyimpan perubahan: " . $stmt->error;

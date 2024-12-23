@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Validasi pilihan dan redirect
     if ($redirect_to === 'hello') {
-        header("Location: hello.php#home");
+        header("Location:hello.php#home");
         exit;
     } elseif ($redirect_to === 'admin dashboard') {
         header("Location: admin.php");
@@ -108,8 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>Cyber Security Admin Panel</h1>
     <div class="options">
         <div class="option-box" onclick="window.location.href='hello.php';">
-            <h3>Hello Page</h3>
-            <p>Go to the Hello page.</p>
+            <h3>User Dashboard</h3>
+            <p>Go to the User Dashboard</p>
         </div>
         <div class="option-box" onclick="window.location.href='admin.php';">
             <h3>Admin Dashboard</h3>

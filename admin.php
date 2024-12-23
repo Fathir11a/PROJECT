@@ -162,286 +162,195 @@ $users = $conn->query("SELECT id, username, role FROM project")->fetchAll(PDO::F
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Securiti Siber Indonesia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f8fc;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+        }
+
+        .sideboard {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+            height: 100vh;
+        }
+
+        .sideboard h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #00C29D;
+        }
+
+        .sideboard ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sideboard ul li {
+            margin: 15px 0;
+        }
+
+        .sideboard ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 1rem;
+            display: block;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sideboard ul li a:hover,
+        .sideboard ul li a.active {
+            background-color: #00C29D;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 25px;
+        }
+
+        .dashboard {
+            text-align: center;
+            background: linear-gradient(to bottom right, #00C29D, #02A47C);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .dashboard h1 {
+            font-size: 2.5rem;
+        }
+
+        .dashboard p {
+            font-size: 1.2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table th {
+            background-color: #00C29D;
+            color: white;
+            text-align: left;
+        }
+
+        form button {
+            margin: 5px;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00C29D;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #028A68;
+        }
+    </style>
 </head>
 
 <body>
-    <style>
-        /* Global Styling */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f7f8fc;
-    color: #333;
-    line-height: 1.6;
-}
-
-/* Navbar */
-.navbar {
-    background-color: #00C29D;
-    color: white;
-    padding: 15px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.navbar h1 {
-    font-size: 1.8rem;
-    margin: 0;
-}
-
-.navbar a {
-    color: white;
-    text-decoration: none;
-    padding: 12px 20px;
-    margin: 0 12px;
-    border-radius: 5px;
-    font-size: 1rem;
-    transition: background-color 0.3s, transform 0.2s;
-}
-
-.navbar a:hover {
-    background-color: #495057;
-    transform: scale(1.05);
-}
-
-/* Dashboard Container */
-.dashboard {
-    padding: 40px 25px;
-    max-width: 1200px;
-    margin: 20px auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard h2 {
-    text-align: center;
-    color: #343a40;
-    font-size: 2rem;
-    margin-bottom: 20px;
-}
-
-/* Success and Error Messages */
-.success, .error {
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.error {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* Table Styling */
-.table-container {
-    margin-top: 30px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-table th,
-table td {
-    padding: 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 1rem;
-}
-
-table th {
-    background-color: #f8f9fa;
-    color: #495057;
-    font-size: 1.1rem;
-}
-
-table tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-table tbody tr:hover {
-    background-color: #f1f3f5;
-}
-
-/* Form Styling */
-form {
-    display: inline;
-}
-
-button,
-select {
-    padding: 10px 20px;
-    margin-top: 10px;
-    border: none;
-    background-color: #00C29D;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.2s;
-    font-size: 1rem;
-}
-
-button:hover,
-select:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
-}
-
-button[type="submit"] {
-    cursor: pointer;
-}
-
-select {
-    padding: 8px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-/* Responsive Styling */
-@media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .navbar a {
-        margin: 8px 0;
-        padding: 10px;
-        font-size: 1.1rem;
-    }
-
-    .dashboard {
-        padding: 25px;
-    }
-
-    table th,
-    table td {
-        font-size: 14px;
-        padding: 12px;
-    }
-
-    button, select {
-        width: 100%;
-        padding: 12px;
-    }
-}
-
-    </style>
-    <div class="navbar">
-        <h1>Securiti Siber Indonesia</h1>
-        <div>
-            <a href="hello.php#home">Dashboard</a>
-            <a href="logout.php">Logout</a>
-        </div>
+    <div class="sideboard">
+        <h2>Menu Admin</h2>
+        <ul>
+            <li><a href="?page=roles" class="<?= $_GET['page'] === 'roles' ? 'active' : '' ?>">Role</a></li>
+            <li><a href="?page=transactions" class="<?= $_GET['page'] === 'transactions' ? 'active' : '' ?>">Transaksi</a></li>
+            <li><a href="hello.php#home">User   Dashboard</a></li>
+            <li><a href="logout.php">Keluar</a></li>
+        </ul>
     </div>
 
-    <div class="dashboard">
-        <h2>Admin Dashboard</h2>
+    <div class="main-content">
+        <?php
+        $page = $_GET['page'] ?? 'dashboard';
 
-        <?php if (!empty($message)) {
-            echo "<p class='message'>$message</p>";
-        } ?>
+        if ($page === 'roles') {
+            echo '<h2>Manage User Roles</h2>';
+            echo '<table>';
+            echo '<thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>';
+            echo '<tbody>';
+            foreach ($users as $user) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($user['id']) . '</td>';
+                echo '<td>' . htmlspecialchars($user['username']) . '</td>';
+                echo '<td>' . htmlspecialchars($user['role']) . '</td>';
+                echo '<td>';
+                echo '<form method="POST" action="">';
+                echo '<input type="hidden" name="id" value="' . htmlspecialchars($user['id']) . '" />';
+                echo '<select name="new_role">';
+                echo '<option value="user"' . ($user['role'] === 'user' ? ' selected' : '') . '>User</option>';
+                echo '<option value="admin"' . ($user['role'] === 'admin' ? ' selected' : '') . '>Admin</option>';
+                echo '</select>';
+                echo '<button type="submit">Update Role</button>';
+                echo '</form>';
+                echo '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
+        } elseif ($page === 'transactions') {
+            echo '<h2>Top-Up Requests</h2>';
+            echo '<table>';
+            echo '<thead><tr><th>ID</th><th>Amount</th><th>Action</th></tr></thead>';
+            echo '<tbody>';
+            foreach ($topups as $topup) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($topup['id']) . '</td>';
+                echo '<td>' . htmlspecialchars($topup['amount']) . '</td>';
+                echo '<td>';
+                echo '<form method="POST" action="">';
+                echo '<input type="hidden" name="id" value="' . htmlspecialchars($topup['id']) . '" />';
+                echo '<button type="submit" name="verification_status" value="approve">Approve</button>';
+                echo '<button type="submit" name="verification_status" value="reject">Reject</button>';
+                echo '</form>';
+                echo '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
 
-        <div class="table-container">
-            <h3>Top-Up Requests</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($topups as $topup) { ?>
-                        <tr>
-                            <td><?= htmlspecialchars($topup['id']) ?></td>
-                            <td><?= htmlspecialchars($topup['amount']) ?></td>
-                            <td>
-                                <form method="POST" action="">
-                                    <input type="hidden" name="id" value="<?= htmlspecialchars($topup['id']) ?>" />
-                                    <button type="submit" name="verification_status" value="approve">Approve</button>
-                                    <button type="submit" name="verification_status" value="reject">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-
-            <h3>Transactions</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Amount</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($transactions as $transaction) { ?>
-                        <tr>
-                            <td><?= htmlspecialchars($transaction['id']) ?></td>
-                            <td><?= htmlspecialchars($transaction['amount']) ?></td>
-                            <td>
-                                <form method="POST" action="">
-                                    <input type="hidden" name="id" value="<?= htmlspecialchars($transaction['id']) ?>" />
-                                    <button type="submit" name="transaction_status" value="approve">Approve</button>
-                                    <button type="submit" name="transaction_status" value="reject">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-
-            <h3>Manage User Roles</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Role</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($users as $user) { ?>
-                        <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['username']) ?></td>
-                            <td><?= htmlspecialchars($user['role']) ?></td>
-                            <td>
-                                <form method="POST" action="">
-                                    <input type="hidden" name="id" value="<?= htmlspecialchars($user['id']) ?>" />
-                                    <select name="new_role">
-                                        <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>User</option>
-                                        <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                    </select>
-                                    <button type="submit">Update Role</button>
-                                </form>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
+            echo '<h2>Saldo Transactions</h2>';
+            echo '<table>';
+            echo '<thead><tr><th>ID</th><th>Amount</th><th>Action</th></tr></thead>';
+            echo '<tbody>';
+            foreach ($transactions as $transaction) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($transaction['id']) . '</td>';
+                echo '<td>' . htmlspecialchars($transaction['amount']) . '</td>';
+                echo '<td>';
+                echo '<form method="POST" action="">';
+                echo '<input type="hidden" name="id" value="' . htmlspecialchars($transaction['id']) . '" />';
+                echo '<button type="submit" name="transaction_status" value="approve">Approve</button>';
+                echo '<button type="submit" name="transaction_status" value="reject">Reject</button>';
+                echo '</form>';
+                echo '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
+        } else {
+            echo '<div class="dashboard">';
+            echo '<h1>Welcome to Admin Dashboard</h1>';
+            echo '<p>Manage users, roles, transactions, and top-ups effectively with this dashboard.</p>';
+            echo '</div>';
+        }
+        ?>
     </div>
 </body>
 
