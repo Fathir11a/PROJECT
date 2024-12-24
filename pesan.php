@@ -242,7 +242,7 @@ if ($receiver_id) {
             .then(response => response.text())
             .then(data => {
                 document.querySelector("input[name='message']").value = "";
-                loadMessages();
+                loadMessages(); // Muat ulang pesan setelah pengiriman
             });
         });
 
