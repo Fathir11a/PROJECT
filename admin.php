@@ -33,126 +33,98 @@ try {
     die("Koneksi gagal: " . htmlspecialchars($e->getMessage()));
 }
 
-// Fungsi untuk memperbarui peran pengguna
-function updateRoleInProject($id, $new_role, $conn)
-{
+// Fungsi untuk memperbarui data di database
+function updateDatabase($query, $params, $conn) {
     try {
-        $stmt = $conn->prepare("UPDATE project SET role = :new_role WHERE id = :id");
-        $stmt->bindParam(':new_role', $new_role, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-
-        return $stmt->rowCount() > 0
-            ? "Peran berhasil diubah menjadi $new_role."
-            : "Tidak ada perubahan pada role atau pengguna tidak ditemukan.";
+        $stmt = $conn->prepare($query);
+        $stmt->execute($params);
+        return $stmt->rowCount();
     } catch (PDOException $e) {
-        return "Gagal memperbarui role: " . htmlspecialchars($e->getMessage());
+        return "Error: " . htmlspecialchars($e->getMessage());
     }
 }
 
 // Proses permintaan POST
 $message = '';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-    if (!$id) {
-        $message = "ID tidak valid.";
+    $action = $_POST['action'] ?? '';
+
+    if (!$id || !in_array($action, ['approve_topup', 'reject_topup', 'approve_transaction', 'reject_transaction', 'update_role'])) {
+        $message = "Input tidak valid.";
     } else {
-        if (isset($_POST['new_role'])) {
-            $new_role = filter_input(INPUT_POST, 'new_role', FILTER_SANITIZE_STRING);
-            if (in_array($new_role, ['user', 'admin'])) {
-                $message = updateRoleInProject($id, $new_role, $conn);
-            } else {
-                $message = "Peran tidak valid.";
-            }
-        }
-        // top-up request 
-        if (isset($_POST['verification_status'])) {
-            $verification_status = filter_input(INPUT_POST, 'verification_status', FILTER_SANITIZE_STRING);
-
-            try {
-                if ($verification_status === 'approve') {
-                    $stmt = $conn->prepare("SELECT username, amount FROM topup_requests WHERE id = :id");
-                    $stmt->bindParam(':id', $id);
-                    $stmt->execute();
-                    $topup = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                    if ($topup) {
-                        $stmt = $conn->prepare("UPDATE project SET coin_balance = coin_balance + :amount WHERE username = :username");
-                        $stmt->bindParam(':amount', $topup['amount']);
-                        $stmt->bindParam(':username', $topup['username']);
+        switch ($action) {
+            case 'approve_topup':
+            case 'reject_topup':
+                $verification_status = $action === 'approve_topup' ? 'approve' : 'reject';
+                try {
+                    if ($verification_status === 'approve') {
+                        $stmt = $conn->prepare("SELECT username, amount FROM topup_requests WHERE id = :id");
+                        $stmt->bindParam(':id', $id);
                         $stmt->execute();
+                        $topup = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                        if ($topup) {
+                            $stmt = $conn->prepare("UPDATE project SET coin_balance = coin_balance + :amount WHERE username = :username");
+                            $stmt->bindParam(':amount', $topup['amount']);
+                            $stmt->bindParam(':username', $topup['username']);
+                            $stmt->execute();
+
+                            $stmt = $conn->prepare("DELETE FROM topup_requests WHERE id = :id");
+                            $stmt->bindParam(':id', $id);
+                            $stmt->execute();
+
+                            $message = "Top-up berhasil diverifikasi dan saldo telah diperbarui.";
+                        } else {
+                            $message = "Top-up tidak ditemukan.";
+                        }
+                    } elseif ($verification_status === 'reject') {
                         $stmt = $conn->prepare("DELETE FROM topup_requests WHERE id = :id");
                         $stmt->bindParam(':id', $id);
                         $stmt->execute();
 
-                        $message = "Top-up berhasil diverifikasi dan saldo telah diperbarui.";
+                        $message = "Permintaan top-up telah ditolak.";
                     } else {
-                        $message = "Top-up tidak ditemukan.";
+                        $message = "Status top-up tidak valid.";
                     }
-                } elseif ($verification_status === 'reject') {
-                    $stmt = $conn->prepare("DELETE FROM topup_requests WHERE id = :id");
-                    $stmt->bindParam(':id', $id);
-                    $stmt->execute();
-
-                    $message = "Permintaan top-up telah ditolak.";
-                } else {
-                    $message = "Status top-up tidak valid.";
+                } catch (PDOException $e) {
+                    $message = "Gagal memverifikasi top-up: " . htmlspecialchars($e->getMessage());
                 }
-            } catch (PDOException $e) {
-                $message = "Gagal memverifikasi top-up: " . htmlspecialchars($e->getMessage());
-            }
-        }
-        //Transaction request 
-        if (isset($_POST['transaction_status'])) {
-            $transaction_status = filter_input(INPUT_POST, 'transaction_status', FILTER_SANITIZE_STRING);
+                break;
 
-            try {
-                if ($transaction_status === 'approve') {
-                    $stmt = $conn->prepare(
-                        "SELECT t.amount, t.id 
-                         FROM transactions t
-                         WHERE t.id = :id"
-                    );
-                    $stmt->bindParam(':id', $id);
-                    $stmt->execute();
-                    $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+            case 'approve_transaction':
+            case 'reject_transaction':
+                $status = $action === 'approve_transaction' ? 'approved' : 'rejected';
+                $message = updateDatabase(
+                    "UPDATE transactions SET status = :status WHERE id = :id",
+                    [':status' => $status, ':id' => $id],
+                    $conn
+                ) ? "Transaksi berhasil $status." : "Gagal memproses transaksi.";
+                break;
 
-                    if ($transaction) {
-                        $stmt = $conn->prepare("UPDATE project SET coin_balance = coin_balance + :amount WHERE username = :username");
-                        $stmt->bindParam(':amount', $transaction['amount']);
-                        $stmt->bindParam(':username', $transaction['username']);
-                        $stmt->execute();
-
-                        $stmt = $conn->prepare("DELETE FROM transactions WHERE id = :id");
-                        $stmt->bindParam(':id', $id);
-                        $stmt->execute();
-
-                        $message = "Transaksi berhasil diverifikasi dan saldo telah diperbarui.";
-                    } else {
-                        $message = "Transaksi tidak ditemukan atau tidak valid.";
-                    }
-                } elseif ($transaction_status === 'reject') {
-                    $stmt = $conn->prepare("DELETE FROM transactions WHERE id = :id");
-                    $stmt->bindParam(':id', $id);
-                    $stmt->execute();
-
-                    $message = "Permintaan transaksi telah ditolak.";
+            case 'update_role':
+                $new_role = filter_input(INPUT_POST, 'new_role', FILTER_SANITIZE_STRING);
+                if (in_array($new_role, ['user', 'admin'])) {
+                    $message = updateDatabase(
+                        "UPDATE project SET role = :role WHERE id = :id",
+                        [':role' => $new_role, ':id' => $id],
+                        $conn
+                    ) ? "Peran berhasil diperbarui." : "Gagal memperbarui peran.";
                 } else {
-                    $message = "Status transaksi tidak valid.";
+                    $message = "Peran tidak valid.";
                 }
-            } catch (PDOException $e) {
-                $message = "Gagal memverifikasi transaksi: " . htmlspecialchars($e->getMessage());
-            }
+                break;
         }
     }
 }
 
-// Ambil data untuk tabel
+// Ambil data tabel
 $topups = $conn->query("SELECT id, amount FROM topup_requests WHERE status = 'pending'")->fetchAll(PDO::FETCH_ASSOC);
 $transactions = $conn->query("SELECT id, amount FROM transactions WHERE status = 'pending'")->fetchAll(PDO::FETCH_ASSOC);
 $users = $conn->query("SELECT id, username, role FROM project")->fetchAll(PDO::FETCH_ASSOC);
 
+// Variabel baru yang ditambahkan
+$welcomeMessage = "Welcome To Admin Dashboard Siber Security Indonesia";
 ?>
 
 <!DOCTYPE html>
@@ -162,35 +134,38 @@ $users = $conn->query("SELECT id, username, role FROM project")->fetchAll(PDO::F
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Securiti Siber Indonesia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f7f8fc;
-            color: #333;
-            line-height: 1.6;
             display: flex;
+            background-color: #f4f4f4;
         }
 
         .sideboard {
             width: 250px;
-            background-color: #343a40;
-            color: white;
+            background: #343a40;
+            color: #fff;
             padding: 20px;
-            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
             height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .sideboard h2 {
-            font-size: 1.5rem;
+        .sideboard .header {
+            font-size: 1.5em;
+            font-weight: 600;
             margin-bottom: 20px;
-            color: #00C29D;
+            text-align: center;
         }
 
         .sideboard ul {
             list-style: none;
             padding: 0;
+            width: 100%;
         }
 
         .sideboard ul li {
@@ -199,158 +174,185 @@ $users = $conn->query("SELECT id, username, role FROM project")->fetchAll(PDO::F
 
         .sideboard ul li a {
             text-decoration: none;
-            color: white;
-            font-size: 1rem;
+            color: #fff;
             display: block;
-            padding: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            transition: background 0.3s ease;
         }
 
-        .sideboard ul li a:hover,
-        .sideboard ul li a.active {
-            background-color: #00C29D;
+        .sideboard ul li a i {
+            margin-right: 10px;
+        }
+
+        .sideboard ul li a:hover {
+            background: #00C29D;
         }
 
         .main-content {
             flex-grow: 1;
-            padding: 40px 25px;
+            padding: 25px;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            border-radius: 12px;
         }
 
-        .dashboard {
-            text-align: center;
-            background: linear-gradient(to bottom right, #00C29D, #02A47C);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .dashboard h1 {
-            font-size: 2.5rem;
-        }
-
-        .dashboard p {
-            font-size: 1.2rem;
+        h2 {
+            color: #333;
+            font-weight: 500;
+            border-bottom: 2px solid #00C29D;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-bottom: 30px;
         }
 
-        table th,
-        table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        table th, table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
         }
 
         table th {
-            background-color: #00C29D;
+            background-color: #343a40;
             color: white;
-            text-align: left;
         }
 
-        form button {
-            margin: 5px;
-            padding: 8px 12px;
+        .btn-approve, .btn-reject, .btn-update {
+            padding: 8px 16px;
             border: none;
             border-radius: 5px;
-            background-color: #00C29D;
-            color: white;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s ease;
         }
 
-        form button:hover {
-            background-color: #028A68;
+        .btn-approve {
+            background-color: #28a745;
+            color: white;
         }
+
+        .btn-approve:hover {
+            background-color: #218838;
+        }
+
+        .btn-reject {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background-color: #c82333;
+        }
+
+        .btn-update {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-update:hover {
+            background-color: #0069d9;
+        }
+
     </style>
 </head>
 
 <body>
     <div class="sideboard">
-        <h2>Menu Admin</h2>
+        <div class="header">Admin Dashboard</div>
         <ul>
-            <li><a href="?page=roles" class="<?= $_GET['page'] === 'roles' ? 'active' : '' ?>">Role</a></li>
-            <li><a href="?page=transactions" class="<?= $_GET['page'] === 'transactions' ? 'active' : '' ?>">Transaksi</a></li>
-            <li><a href="hello.php#home">User   Dashboard</a></li>
-            <li><a href="logout.php">Keluar</a></li>
+            <li><a href="?page=roles"><i class="fas fa-users"></i> Manage Roles</a></li>
+            <li><a href="?page=transactions"><i class="fas fa-wallet"></i> Manage Transactions</a></li>
+            <li><a href="hello.php#home"><i class="fas fa-user"></i> User Dashboard</a></li>
+            <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </div>
-
     <div class="main-content">
-        <?php
-        $page = $_GET['page'] ?? 'dashboard';
+        <!-- Menampilkan pesan selamat datang -->
+        <h2 style="color: green; text-align: center;"><?php echo $welcomeMessage; ?></h2>
 
-        if ($page === 'roles') {
-            echo '<h2>Manage User Roles</h2>';
-            echo '<table>';
-            echo '<thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Action</th></tr></thead>';
-            echo '<tbody>';
-            foreach ($users as $user) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($user['id']) . '</td>';
-                echo '<td>' . htmlspecialchars($user['username']) . '</td>';
-                echo '<td>' . htmlspecialchars($user['role']) . '</td>';
-                echo '<td>';
-                echo '<form method="POST" action="">';
-                echo '<input type="hidden" name="id" value="' . htmlspecialchars($user['id']) . '" />';
-                echo '<select name="new_role">';
-                echo '<option value="user"' . ($user['role'] === 'user' ? ' selected' : '') . '>User</option>';
-                echo '<option value="admin"' . ($user['role'] === 'admin' ? ' selected' : '') . '>Admin</option>';
-                echo '</select>';
-                echo '<button type="submit">Update Role</button>';
-                echo '</form>';
-                echo '</td>';
-                echo '</tr>';
-            }
-            echo '</tbody></table>';
-        } elseif ($page === 'transactions') {
-            echo '<h2>Top-Up Requests</h2>';
-            echo '<table>';
-            echo '<thead><tr><th>ID</th><th>Amount</th><th>Action</th></tr></thead>';
-            echo '<tbody>';
-            foreach ($topups as $topup) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($topup['id']) . '</td>';
-                echo '<td>' . htmlspecialchars($topup['amount']) . '</td>';
-                echo '<td>';
-                echo '<form method="POST" action="">';
-                echo '<input type="hidden" name="id" value="' . htmlspecialchars($topup['id']) . '" />';
-                echo '<button type="submit" name="verification_status" value="approve">Approve</button>';
-                echo '<button type="submit" name="verification_status" value="reject">Reject</button>';
-                echo '</form>';
-                echo '</td>';
-                echo '</tr>';
-            }
-            echo '</tbody></table>';
+        <?php if (isset($message)) echo "<p style='color: #d9534f; font-weight: bold;'>$message</p>"; ?>
+        <?php if ($_GET['page'] === 'roles') : ?>
+            <h2>Manage User Roles</h2>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Action</th>
+                </tr>
+                <?php foreach ($users as $user) : ?>
+                    <tr>
+                        <td><?= htmlspecialchars($user['id']) ?></td>
+                        <td><?= htmlspecialchars($user['username']) ?></td>
+                        <td><?= htmlspecialchars($user['role']) ?></td>
+                        <td>
+                            <form method="POST">
+                                <input type="hidden" name="id" value="<?= $user['id'] ?>">
+                                <select name="new_role" required>
+                                    <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>User</option>
+                                    <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                </select>
+                                <button type="submit" name="action" value="update_role" class="btn-update">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php elseif ($_GET['page'] === 'transactions') : ?>
+            <h2>Manage Transactions</h2>
+            
+            <h3>Pending Top-Up Requests</h3>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+                <?php foreach ($topups as $topup) : ?>
+                    <tr>
+                        <td><?= htmlspecialchars($topup['id']) ?></td>
+                        <td><?= htmlspecialchars($topup['amount']) ?></td>
+                        <td>
+                            <form method="POST">
+                                <input type="hidden" name="id" value="<?= $topup['id'] ?>">
+                                <button type="submit" name="action" value="approve_topup" class="btn-approve">Approve</button>
+                                <button type="submit" name="action" value="reject_topup" class="btn-reject">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
 
-            echo '<h2>Saldo Transactions</h2>';
-            echo '<table>';
-            echo '<thead><tr><th>ID</th><th>Amount</th><th>Action</th></tr></thead>';
-            echo '<tbody>';
-            foreach ($transactions as $transaction) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($transaction['id']) . '</td>';
-                echo '<td>' . htmlspecialchars($transaction['amount']) . '</td>';
-                echo '<td>';
-                echo '<form method="POST" action="">';
-                echo '<input type="hidden" name="id" value="' . htmlspecialchars($transaction['id']) . '" />';
-                echo '<button type="submit" name="transaction_status" value="approve">Approve</button>';
-                echo '<button type="submit" name="transaction_status" value="reject">Reject</button>';
-                echo '</form>';
-                echo '</td>';
-                echo '</tr>';
-            }
-            echo '</tbody></table>';
-        } else {
-            echo '<div class="dashboard">';
-            echo '<h1>Welcome to Admin Dashboard</h1>';
-            echo '<p>Manage users, roles, transactions, and top-ups effectively with this dashboard.</p>';
-            echo '</div>';
-        }
-        ?>
+            <h3>Pending Transactions</h3>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+                <?php foreach ($transactions as $transaction) : ?>
+                    <tr>
+                        <td><?= htmlspecialchars($transaction['id']) ?></td>
+                        <td><?= htmlspecialchars($transaction['amount']) ?></td>
+                        <td>
+                            <form method="POST">
+                                <input type="hidden" name="id" value="<?= $transaction['id'] ?>">
+                                <button type="submit" name="action" value="approve_transaction" class="btn-approve">Approve</button>
+                                <button type="submit" name="action" value="reject_transaction" class="btn-reject">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php endif; ?>
     </div>
 </body>
 

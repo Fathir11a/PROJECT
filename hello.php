@@ -21,14 +21,13 @@ if ($result->num_rows > 0) {
     $name = $user['full_name'];
     $phone = $user['phone'];
     $address = $user['address'];
-    $photo = $user['profile_picture']; // Nama file foto profil
     $role = $user['role']; // Role pengguna
     $user_id = $user['user_id']; // Asumsikan ada kolom user_id
 
     // Pastikan user_id adalah integer dan sesuai dengan struktur tabel
     $sql_coin = "SELECT coin_balance FROM project WHERE username = ?";
     $stmt_coin = $conn->prepare($sql_coin);
-    $stmt_coin->bind_param('i', $username);  // 'i' berarti integer
+    $stmt_coin->bind_param('s', $username);  // 's' untuk string karena username adalah string
     $stmt_coin->execute();
     $result_coin = $stmt_coin->get_result();
 
@@ -69,6 +68,9 @@ $users = [];
 while ($row = $result_users->fetch_assoc()) {
     $users[] = $row;
 }
+
+$profile_image = $user['profile_image'] ?? 'profil_image/default.jpg';
+
 ?>
 
 <!DOCTYPE html>
@@ -149,7 +151,6 @@ while ($row = $result_users->fetch_assoc()) {
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 40px 0;
-            /* Jarak atas dan bawah */
         }
 
         .section h2 {
@@ -183,37 +184,10 @@ while ($row = $result_users->fetch_assoc()) {
             transform: translateY(-5px);
         }
 
-
-        .profile-photo {
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 4px solid #16a085;
-            background-color: #e0e0e0;
-        }
-
-        .profile-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .menu-item.active {
-            background-color: #1abc9c;
-        }
-
-        /* Profile Info Container */
         .profile-info {
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* Pusatkan teks secara horizontal */
             margin-top: 20px;
             padding: 20px;
             background-color: #ffffff;
@@ -223,26 +197,20 @@ while ($row = $result_users->fetch_assoc()) {
             font-family: 'Poppins', sans-serif;
             width: 100%;
             max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: 0 auto;
         }
 
-        /* Table Style (Teks Sejajar dengan Nama) */
         .profile-info table {
-            width: auto;
-            /* Sesuaikan dengan isi */
+            width: 100%;
             border-collapse: collapse;
-            margin: 0 auto;
         }
 
         .profile-info table th,
         .profile-info table td {
             text-align: left;
-            /* Teks rata kiri */
             font-size: 16px;
             font-weight: 500;
-            padding: 5px 10px;
-            /* Jarak horizontal antara teks */
+            padding: 10px;
             vertical-align: middle;
             color: #34495e;
         }
@@ -251,75 +219,62 @@ while ($row = $result_users->fetch_assoc()) {
             font-weight: bold;
         }
 
-        .profile-info table td:first-child {
-            padding-right: 5px;
-        }
-
         .profile-info table tr {
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #image-selector {
+            display: none;
+            /* Sembunyikan dropdown secara default */
+            margin-top: 10px;
+            padding: 5px;
+        }
+
+        #edit-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 50%;
+            width: 30px;
             height: 30px;
-            /* Jarak vertikal antar baris */
-        }
-
-
-        /* Profil Center */
-        .profile-container {
             display: flex;
-            justify-content: center;
             align-items: center;
-            min-height: 400px;
-            position: relative;
-            padding: 20px;
+            justify-content: center;
+            cursor: pointer;
         }
 
-        .profile-content {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            padding: 30px;
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
+        #profile-img {
+            display: block;
+            margin: 0 auto;
         }
 
-        .profile-content h2 {
-            margin-bottom: 20px;
-            font-size: 28px;
-        }
-
-        .profile-content p {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .profile-content .btn {
-            background-color: #16a085;
+        #change-profile-btn {
+            display: block;
+            margin: 20px auto;
+            /* Memastikan tombol ada di tengah */
+            background-color: #e74c3c;
+            /* Warna merah */
             color: white;
             padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
             font-size: 16px;
-            margin-top: 20px;
-            display: inline-block;
-        }
-
-        .profile-content .btn:hover {
-            background-color: #1abc9c;
-        }
-
-        .profile-button {
-            background-color:#1abc9c;
-            color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        .profile-button:hover {
-            background-color:#1abc9c;
+        #change-profile-btn:hover {
+            background-color: #c0392b;
+            /* Warna merah lebih gelap saat hover */
         }
+    </style>
+
     </style>
 </head>
 
@@ -337,7 +292,7 @@ while ($row = $result_users->fetch_assoc()) {
             </a>
         </div>
         <a href="pesan.php">
-            <i class="fas fa-envelope"></i> Pesan`
+            <i class="fas fa-envelope"></i> Pesan
         </a>
         <a href="topup.php">
             <i class="fas fa-gem"></i> Topup
@@ -380,80 +335,223 @@ while ($row = $result_users->fetch_assoc()) {
 
         <!-- Bagian Profil -->
         <div id="profile" class="section hidden">
-            <div class="profile-container">
-                <div class="profile-content">
-                    <div class="profile-photo">
-                        <img src="path/to/photos/<?php echo htmlspecialchars($photo); ?>" alt="Foto Profil">
-                    </div>
-                    <h2><?php echo htmlspecialchars($name); ?></h2>
-                    <div class="profile-info">
-                        <table>
-                            <tr>
-                                <th>Email</th>
-                                <td>: <?= htmlspecialchars($user['email']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>No Telepon</th>
-                                <td>: <?= htmlspecialchars($user['phone']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>Address</th>
-                                <td>: <?= htmlspecialchars($user['address']); ?></td>
-                            </tr>
-                            <tr>
-                                <th>Saldo</th>
-                                <td>: Rp <?= number_format($user['coin_balance'], 0, ',', '.'); ?></td>
-                            </tr>
-                        </table>
-                    </div>
-                    <button class="profile-button" onclick="window.location.href='change_profil.php';">
-                        Ganti Profil
-                    </button>
+            <div class="profile-info">
+                <!-- Tampilkan Gambar Profil -->
+                <div style="text-align: center; margin-bottom: 20px; position: relative;">
+                    <img id="profile-img"
+                        src="<?= htmlspecialchars($profile_image); ?>"
+                        alt="Foto Profil"
+                        style="width: 150px; height: 150px; border-radius: 50%; border: 2px solid #2c3e50; object-fit: cover;">
 
+
+                    <!-- Ikon Edit -->
+                    <div id="edit-icon">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
                 </div>
+
+                <!-- Pilih Gambar -->
+                <select id="image-selector">
+                    <?php
+                    // Mendapatkan daftar gambar dari folder profil_image
+                    $images = glob('profil_image/*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+                    foreach ($images as $image) {
+                        $imageName = basename($image);
+                        echo "<option value='profil_image/$imageName'>$imageName</option>";
+                    }
+                    ?>
+                </select>
+
+                <!-- Tabel Data Pengguna -->
+                <table>
+                    <tr>
+                        <th>Nama</th>
+                        <td>: <?= htmlspecialchars($name); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>: <?= htmlspecialchars($email); ?></td>
+                    </tr>
+                    <tr>
+                        <th>No Telepon</th>
+                        <td>: <?= htmlspecialchars($phone); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Alamat</th>
+                        <td>: <?= htmlspecialchars($address); ?></td>
+                    </tr>
+                    <tr>
+                        <th>Saldo</th>
+                        <td>: Rp <?= number_format($coin_balance, 0, ',', '.'); ?></td>
+                    </tr>
+                </table>
+                <a id="change-profile-btn" href="change_profil.php">Ganti Profil</a>
             </div>
         </div>
-    </div>
 
-    <!-- JavaScript -->
-    <script>
-        // Update hash di URL dan tampilkan section yang sesuai
-        const links = document.querySelectorAll('.menu-item');
-        const sections = document.querySelectorAll('.section');
 
-        function changeSection() {
-            const hash = window.location.hash;
 
-            // Menyembunyikan semua bagian dan hanya menampilkan bagian yang sesuai dengan hash URL
-            sections.forEach(section => {
-                section.classList.add('hidden');
-                if (hash && section.id === hash.substring(1)) {
-                    section.classList.remove('hidden');
+        <!-- JavaScript -->
+        <script>
+            const links = document.querySelectorAll('.menu-item');
+            const sections = document.querySelectorAll('.section');
+
+            function changeSection() {
+                const hash = window.location.hash || '#home'; // Default ke #home jika tidak ada hash
+
+                // Menyembunyikan semua bagian
+                sections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                // Menampilkan bagian sesuai hash
+                const activeSection = document.querySelector(hash);
+                if (activeSection) {
+                    activeSection.classList.remove('hidden');
                 }
-            });
 
-            // Menambahkan kelas 'active' pada link yang sesuai dengan hash URL
+                // Menambahkan kelas 'active' pada menu yang sesuai
+                links.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            // Menjalankan fungsi changeSection ketika halaman dimuat dan hash berubah
+            window.addEventListener('load', changeSection);
+            window.addEventListener('hashchange', changeSection);
+
+            // Menyesuaikan hash tanpa reload halaman
             links.forEach(link => {
-                if (link.getAttribute('href') === hash) {
-                    link.classList.add('active');
-                } else {
-                    link.classList.remove('active');
-                }
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.hash = this.getAttribute('href');
+                });
             });
-        }
 
-        // Menjalankan fungsi changeSection ketika halaman dimuat dan saat hash di URL berubah
-        window.addEventListener('load', changeSection);
-        window.addEventListener('hashchange', changeSection);
+            // Skrip untuk mengganti gambar profil
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImg = document.getElementById('profile-img');
+                const imageSelector = document.getElementById('image-selector');
 
-        // Mengatur ulang hash URL ketika menu diklik, tanpa mereload halaman
-        links.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault(); // Mencegah reload halaman
-                window.location.hash = this.getAttribute('href'); // Mengubah hash URL
+                // Ubah gambar ketika opsi dipilih
+                imageSelector.addEventListener('change', function() {
+                    profileImg.src = this.value; // Mengatur src gambar ke nilai yang dipilih
+                });
+
+                // Klik pada gambar untuk membuka selector
+                profileImg.addEventListener('click', function() {
+                    imageSelector.focus();
+                });
             });
-        });
-    </script>
+
+            // JavaScript untuk mengganti gambar profil
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImg = document.getElementById('profile-img');
+                const imageSelector = document.getElementById('image-selector');
+                const editIcon = document.getElementById('edit-icon');
+
+                // Ubah gambar ketika opsi dipilih
+                imageSelector.addEventListener('change', function() {
+                    profileImg.src = this.value; // Mengatur src gambar ke nilai yang dipilih
+                });
+
+                // Klik ikon edit untuk membuka selector
+                editIcon.addEventListener('click', function() {
+                    imageSelector.focus(); // Memfokuskan pada dropdown selector
+                });
+            });
+
+            // Fungsi untuk berpindah bagian
+            function changeSection() {
+                const hash = window.location.hash || '#home';
+                const sections = document.querySelectorAll('.section');
+                const links = document.querySelectorAll('.menu-item');
+
+                sections.forEach(section => section.classList.add('hidden'));
+                const activeSection = document.querySelector(hash);
+                if (activeSection) activeSection.classList.remove('hidden');
+
+                links.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            // Fungsi untuk mengatur gambar profil
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImg = document.getElementById('profile-img');
+                const imageSelector = document.getElementById('image-selector');
+                const editIcon = document.getElementById('edit-icon');
+
+                editIcon.addEventListener('click', () => {
+                    imageSelector.style.display = 'block';
+                    imageSelector.focus();
+                });
+
+                imageSelector.addEventListener('change', function() {
+                    profileImg.src = this.value;
+                    imageSelector.style.display = 'none';
+                });
+
+                profileImg.addEventListener('click', () => imageSelector.focus());
+            });
+
+            window.addEventListener('load', changeSection);
+            window.addEventListener('hashchange', changeSection);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const changeProfileBtn = document.getElementById('change-profile-btn');
+                const imageSelector = document.getElementById('image-selector');
+
+                changeProfileBtn.addEventListener('click', () => {
+                    imageSelector.style.display = 'block';
+                    imageSelector.focus();
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const profileImg = document.getElementById('profile-img');
+                const imageSelector = document.getElementById('image-selector');
+
+                imageSelector.addEventListener('change', function() {
+                    const selectedImage = this.value;
+                    profileImg.src = selectedImage;
+
+                    // Kirim data ke server
+                    fetch('save_profile_image.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `image_path=${encodeURIComponent(selectedImage)}`
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status !== 'success') {
+                                console.error('Error saving profile image:', data.message);
+                            }
+                        })
+                        .catch(error => console.error('AJAX error:', error));
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+    const changeProfileBtn = document.getElementById('change-profile-btn');
+
+    // Ketika tombol diklik, arahkan ke change_profile.php
+    changeProfileBtn.addEventListener('click', function() {
+        window.location.href = 'change_profile.php';
+    });
+});
+
+        </script>
 
 </body>
 

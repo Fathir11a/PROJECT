@@ -35,7 +35,6 @@ if ($result->num_rows > 0) {
     $full_name = $row['full_name'];
     $phone = $row['phone'];
     $address = $row['address'];
-    $profile_picture = $row['profile_picture'];
     $id_pengguna = $row['id'];
 } else {
     echo "Pengguna tidak ditemukan.";
@@ -47,47 +46,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $_POST['phone'];
     $address = $_POST['address'];
 
-    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
-        $file = $_FILES['profile_picture'];
-        $file_name = $file['name'];
-        $file_tmp = $file['tmp_name'];
-        $file_type = $file['type'];
-
-        $target_dir = "uploads/";
-        if (!is_dir($target_dir)) {
-            mkdir($target_dir, 0777, true);
-        }
-
-        $target_file = $target_dir . basename($file_name);
-
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        if (in_array($file_type, $allowed_types)) {
-            if (move_uploaded_file($file_tmp, $target_file)) {
-                echo "File berhasil diunggah.<br>";
-            } else {
-                echo "Gagal mengunggah file.";
-                exit;
-            }
-        } else {
-            echo "File harus berupa gambar (JPEG, PNG, GIF).";
-            exit;
-        }
-    } else {
-        $target_file = $profile_picture; // Jika tidak ada perubahan foto, gunakan foto lama
-    }
-
     $query = "UPDATE project SET 
                 full_name = ?, 
                 phone = ?, 
-                address = ?, 
-                profile_picture = ? 
+                address = ? 
               WHERE id = ?";
 
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ssssi", $full_name, $phone, $address, $target_file, $id_pengguna);
+    $stmt->bind_param("sssi", $full_name, $phone, $address, $id_pengguna);
 
     if ($stmt->execute()) {
-        header("Location:hello.php#profile");
+        header("Location: hello.php#profile");
         exit;
     } else {
         echo "Gagal menyimpan perubahan: " . $stmt->error;
@@ -141,8 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             color: #2c3e50;
         }
 
-        .form-group input[type="text"],
-        .form-group input[type="file"] {
+        .form-group input[type="text"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -150,8 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-size: 14px;
         }
 
-        .form-group input[type="text"]:focus,
-        .form-group input[type="file"]:focus {
+        .form-group input[type="text"]:focus {
             border-color: #16a085;
             outline: none;
         }
@@ -171,18 +138,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .form-group button:hover {
             background-color: #0056b3;
         }
-
-        .form-group .note {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
     </style>
 </head>
 <body>
     <div class="profile-container">
         <h2>Ganti Profil</h2>
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form action="" method="POST">
             <div class="form-group">
                 <label for="full_name">Nama Lengkap</label>
                 <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($full_name); ?>" required>
@@ -194,15 +155,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <label for="address">Alamat</label>
                 <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($address); ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="profile_picture">Foto Profil</label>
-                <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
-                <?php if ($profile_picture): ?>
-                    <p class="note">Foto saat ini: <img src="<?php echo $profile_picture; ?>" width="50"></p>
-                <?php else: ?>
-                    <p class="note">Belum ada foto.</p>
-                <?php endif; ?>
             </div>
             <div class="form-group">
                 <button type="submit">Simpan Perubahan</button>

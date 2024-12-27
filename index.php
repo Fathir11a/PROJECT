@@ -6,11 +6,10 @@ session_start();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
-    $email = $_POST['email'];
 
-    $sql = "SELECT * FROM project WHERE username = ? AND email = ?";
+    $sql = "SELECT * FROM project WHERE username = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $username, $email);
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -35,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error_message = "Password salah.";
         }
     } else {
-        $error_message = "Username atau email tidak ditemukan.";
+        $error_message = "Username tidak ditemukan.";
     }
     $stmt->close();
 }
@@ -94,7 +93,7 @@ $conn->close();
             display: block;
             margin: 10px 0 5px;
         }
-        input[type="text"], input[type="password"], input[type="email"] {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #555;
@@ -143,10 +142,6 @@ $conn->close();
             <div class="form_group">
                 <label for="password">Password:</label>
                 <input type="password" name="password" required><br>
-            </div>
-            <div class="form_group">
-                <label for="email">Email:</label>
-                <input type="email" name="email" required><br>
             </div>
             <button type="submit">Login</button>
         </form>
